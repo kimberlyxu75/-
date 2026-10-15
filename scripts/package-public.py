@@ -3,7 +3,7 @@ from pathlib import Path
 import json, shutil, zipfile
 root = Path(__file__).resolve().parent.parent
 out = root / 'github-release'
-files = ['README.md','README-FIRST.txt','DEPLOY.md','LICENSE','.gitignore','index.html','app.js','security.js','styles.css','mobile-overrides.css','sw.js','manifest.webmanifest','icon.svg','scripts/package.py','scripts/package-public.py','scripts/package-minitool.mjs','scripts/minitool-css.py','scripts/check-minitool.py','minitool-src/runtime.js','tests/security.test.cjs','tests/income.test.cjs','tests/minitool.test.cjs','tests/release.test.cjs','.github/workflows/checks.yml','.github/workflows/pages.yml']
+files = ['docs/images/records.png','docs/images/stats.png','docs/images/budgets.png','README.md','README-FIRST.txt','DEPLOY.md','LICENSE','.gitignore','index.html','app.js','security.js','styles.css','mobile-overrides.css','sw.js','manifest.webmanifest','icon.svg','scripts/package.py','scripts/package-public.py','scripts/package-minitool.mjs','scripts/minitool-css.py','scripts/check-minitool.py','minitool-src/runtime.js','tests/security.test.cjs','tests/income.test.cjs','tests/minitool.test.cjs','tests/release.test.cjs','.github/workflows/checks.yml','.github/workflows/pages.yml']
 # No deletion: refuse unknown leftovers instead of accidentally publishing them.
 allowed = set(files + ['package.json','package-lock.json'])
 if out.exists():
@@ -25,7 +25,7 @@ lock['packages'][''] = {'name':pkg['name'],'version':pkg['version'],'license':'M
 markers = ['-----BEGIN PRIVATE KEY-----','-----BEGIN RSA PRIVATE KEY-----','/Users/','AKID','ghp_','github_pat_']
 for name in allowed:
     p = out / name
-    if p.is_file() and name != 'scripts/package-public.py' and any(marker in p.read_text() for marker in markers):
+    if p.is_file() and p.suffix != '.png' and name != 'scripts/package-public.py' and any(marker in p.read_text() for marker in markers):
         raise SystemExit('Publication review needed for: '+str(p.relative_to(out)))
 with zipfile.ZipFile(root / 'yi-laoshi-jizhang-github-beta.zip','w',zipfile.ZIP_DEFLATED) as z:
     for name in sorted(allowed): z.write(out / name, name)

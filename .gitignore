@@ -17,3 +17,6 @@ github-release/
 design-previews/
 cloud-config.js
 cloudbaserc.json
+
+!docs/images/
+!docs/images/*.png
