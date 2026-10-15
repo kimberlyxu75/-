@@ -1,0 +1,15 @@
+{
+  "name": "yi-laoshi-jizhang",
+  "version": "0.3.0-beta.1",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "build:minitool": "node scripts/package-minitool.mjs",
+    "package": "python3 scripts/package.py",
+    "package:public": "python3 scripts/package-public.py"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.10"
+  }
+}

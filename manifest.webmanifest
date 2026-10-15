@@ -1,0 +1,19 @@
+{
+  "name": "已老实记账",
+  "short_name": "已老实记账",
+  "description": "本机保存的收支记录、分类统计和月度预算工具。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffe8f0",
+  "theme_color": "#ffe7ef",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

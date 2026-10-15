@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>已老实记账 · Beta</title>
+    <meta name="theme-color" content="#f3efe5" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="已老实记账" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./styles.css?v=39" />
+    <link rel="stylesheet" href="./mobile-overrides.css?v=39" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">✧</div>
+          <div>
+            <h1 id="header-year-title">August 2026</h1>
+          </div>
+        </div>
+
+        <button id="storage-mode-btn" class="tool-btn storage-mode-btn" type="button" title="数据存储设置">本机保存</button>
+        <div class="backup-actions" aria-label="数据备份">
+          <button class="tool-btn" id="export-data-btn" type="button" title="导出备份">⇩</button>
+          <label class="tool-btn" for="import-data-input" title="导入恢复">⇧</label>
+          <button class="tool-btn" id="undo-import-btn" type="button" hidden title="撤销恢复">↶</button>
+          <input id="import-data-input" type="file" accept="application/json,.json" />
+        </div>
+
+        <nav class="tabs" aria-label="页面切换">
+          <button class="tab is-active" data-view="records" type="button">
+            <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21V3Z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span> 明细
+          </button>
+          <button class="tab" data-view="stats" type="button">
+            <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7M3 20h18"/></svg></span> 统计
+          </button>
+          <button class="tab add-tab" data-view="records" data-focus-record="true" type="button" title="新增记账">
+            <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
+          </button>
+          <button class="tab" data-view="budgets" type="button">
+            <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h15a2 2 0 0 1 2 2v9H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13"/><path d="M15 11h6v4h-6a2 2 0 0 1 0-4Z"/></svg></span> 预算
+          </button>
+          <button class="tab" data-view="categories" type="button">
+            <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span> 分类
+          </button>
+        </nav>
+      </header>
+
+    <p id="storage-disclosure" class="storage-disclosure"></p>
+    <p id="data-status" class="storage-disclosure" role="status" hidden></p>
+    <button id="undo-delete-btn" class="tool-btn undo-delete-btn" type="button" hidden>撤销删除</button>
+    <main class="workspace">
+        <section class="view is-active" id="records-view" aria-labelledby="records-title">
+          <div class="records-layout">
+            <section class="panel overview-card">
+              <div class="overview-head">
+                <div>
+                  <h2>本月记账总览</h2>
+                </div>
+              </div>
+              <div class="overview-metrics" aria-label="本月概览">
+                <div>
+                  <span>↘ 本月总支出</span>
+                  <strong id="header-month-spent">¥0.00</strong>
+                </div>
+                <div>
+                  <span>↗ 本月计划预算</span>
+                  <strong id="header-month-budget">¥0.00</strong>
+                </div>
+              </div>
+            </section>
+
+            <form class="panel expense-form" id="expense-form">
+              <div class="form-title">
+                <div class="form-title-icon">＋</div>
+                <h2 id="records-title">记一笔</h2>
+              </div>
+
+              <div class="segmented type-switch" role="group" aria-label="选择记账类型"><button type="button" class="is-active" data-record-type="expense" aria-pressed="true">支出</button><button type="button" data-record-type="income" aria-pressed="false">收入</button></div>
+              <label class="amount-field">
+                <span id="amount-caption">支出金额（元）</span>
+                <input id="expense-amount" min="0.01" step="0.01" type="number" placeholder="¥ 0.00" required />
+              </label>
+
+              <div class="quick-amounts" aria-label="快捷金额">
+                <button type="button" data-add-amount="10">+10</button>
+                <button type="button" data-add-amount="20">+20</button>
+                <button type="button" data-add-amount="50">+50</button>
+                <button type="button" data-add-amount="100">+100</button>
+                <button type="button" data-add-amount="200">+200</button>
+                <button type="button" data-add-amount="500">+500</button>
+                <button class="clear-amount" type="button" id="clear-amount-btn">清空</button>
+              </div>
+
+              <div class="category-picker">
+                <div class="field-caption" id="category-caption">选择支出类别</div>
+                <select id="expense-category" required aria-label="选择费用类别"></select>
+              </div>
+
+              <div class="form-grid">
+                <label>
+                  <span>选择日期</span>
+                  <input id="expense-date" type="date" required />
+                </label>
+                <label>
+                  <span>添加备注（任选）</span>
+                  <input id="expense-note" maxlength="32" type="text" placeholder="这笔钱花在哪里了？" />
+                </label>
+              </div>
+
+              <button class="primary-btn submit-record" type="submit">＋ 记一笔入账</button>
+            </form>
+
+            <section class="panel">
+              <div class="section-title">
+                <div>
+                  <p class="eyebrow">最近 7 天</p>
+                </div>
+                <strong id="today-total">¥0.00</strong>
+              </div>
+              <div class="expense-list" id="expense-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="stats-view" aria-label="统计">
+          <div class="stats-type-head"><div class="segmented type-switch" role="group" aria-label="选择统计类型"><button type="button" class="is-active" data-stats-type="expense" aria-pressed="true">支出</button><button type="button" data-stats-type="income" aria-pressed="false">收入</button></div></div>
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">统计看板</p>
+            </div>
+            <div class="segmented" role="group" aria-label="统计维度">
+              <button class="period-btn is-active" data-period="week" type="button">周统计</button>
+              <button class="period-btn" data-period="month" type="button">月统计</button>
+              <button class="period-btn" data-period="year" type="button">年统计</button>
+            </div>
+          </div>
+
+          <section class="panel calendar-panel stats-calendar-panel" id="calendar-panel" hidden>
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">□ · 🎀 Monthly Calendar ✣ ♡</p>
+              </div>
+              <input id="calendar-month" type="month" />
+            </div>
+            <div class="calendar-weekdays">
+              <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+            </div>
+            <div class="calendar" id="calendar"></div>
+          </section>
+
+          <div class="stats-grid">
+            <section class="panel total-card">
+              <p class="eyebrow" id="period-label">本周总花销</p>
+              <strong id="period-total">¥0.00</strong>
+            </section>
+
+            <section class="panel">
+              <div class="section-title">
+                <div>
+                </div>
+              </div>
+              <div class="category-bars" id="category-bars"></div>
+            </section>
+          </div>
+
+          <section class="panel year-panel" id="year-panel" hidden>
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">年度视图</p>
+                <h3 id="year-title">每月总花销</h3>
+              </div>
+            </div>
+            <div class="year-months" id="year-months"></div>
+          </section>
+        </section>
+
+        <section class="view" id="budgets-view" aria-label="预算管理">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">预算管理</p>
+            </div>
+            <input id="budget-month" type="month" />
+          </div>
+
+          <section class="panel budget-total">
+            <div class="monthly-budget-head">
+              <label for="total-budget-input">月总预算</label>
+              <div class="monthly-budget-field">
+                <span aria-hidden="true">¥</span>
+                <input id="total-budget-input" type="number" min="0" max="1000000000" step="0.01" inputmode="decimal" placeholder="0.00" />
+              </div>
+            </div>
+            <div class="budget-meter">
+              <div id="total-budget-fill"></div>
+            </div>
+            <p id="total-budget-copy"></p>
+          </section>
+
+          <section class="panel">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">类别预算</p>
+              </div>
+            </div>
+            <div class="budget-list" id="budget-list"></div>
+          </section>
+        </section>
+
+        <section class="view" id="categories-view" aria-label="收支分类">
+          <div class="page-head">
+            <div class="category-head">
+              <div>
+                <p class="eyebrow">收支分类管理</p>
+              </div>
+            </div>
+          </div>
+          <div class="category-grid" id="category-grid"></div>
+          <button class="primary-btn category-add-btn" id="add-category-btn" type="button" hidden>＋ 新增支出分类</button>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="category-dialog">
+      <form method="dialog" id="category-form" class="dialog-card">
+        <div>
+          <p class="eyebrow" id="category-dialog-kicker">新增费用类别</p>
+          <h3 id="category-dialog-title">费用类别</h3>
+        </div>
+        <input id="category-id" type="hidden" />
+        <label>
+          <span>名称</span>
+          <input id="category-name" maxlength="12" required />
+        </label>
+        <label>
+          <span>Emoji</span>
+          <input id="category-emoji" maxlength="2" required />
+        </label>
+        <label>
+          <span>颜色</span>
+          <input id="category-color" type="color" required />
+        </label>
+        <div class="dialog-actions">
+          <button class="ghost-btn" value="cancel" type="button" id="cancel-category-btn">取消</button>
+          <button class="primary-btn" value="default" type="submit">保存</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="day-expense-dialog">
+      <div class="dialog-card day-dialog-card">
+        <div class="day-dialog-head">
+          <div>
+            <p class="eyebrow">当天明细</p>
+            <h3 id="day-dialog-title">每日支付记录</h3>
+          </div>
+          <button class="icon-btn" id="close-day-expenses-btn" type="button" title="关闭">×</button>
+        </div>
+        <div class="day-dialog-total">
+          <span id="day-dialog-count">0 笔</span>
+          <strong id="day-dialog-total">¥0.00</strong>
+        </div>
+        <div class="day-dialog-list" id="day-dialog-list"></div>
+        <button class="primary-btn day-add-btn" id="add-on-day-btn" type="button">＋ 在此日期新增记账</button>
+      </div>
+    </dialog>
+
+    <dialog id="security-dialog">
+      <form method="dialog" class="dialog-card">
+        <h3>账本数据保护</h3>
+        <p id="security-message"></p>
+        <input id="security-password" type="password" autocomplete="off" aria-label="备份密码" hidden />
+        <div class="category-actions">
+          <button type="submit" value="cancel" formnovalidate>取消</button>
+          <button type="submit" value="confirm" class="primary-btn">确认</button>
+        </div>
+      </form>
+    </dialog>
+    <script src="./security.js?v=39"></script>
+    <script src="./app.js?v=39"></script>
+  </body>
+</html>
